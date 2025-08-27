@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 async function main() {
   const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 
+  // Build the main MCP server
   await build({
     entryPoints: ['src/index.ts'],
     bundle: true,
@@ -31,6 +32,40 @@ async function main() {
       'querystring',
       'asana',
       'jsdom',
+    ]
+  });
+
+  // Build the HTTP server
+  await build({
+    entryPoints: ['src/http-server.ts'],
+    bundle: true,
+    platform: 'node',
+    target: 'node18',
+    format: 'esm',
+    outfile: 'dist/http-server.js',
+    define: {
+      __VERSION__: JSON.stringify(pkg.version),
+      'process.env.NODE_ENV': JSON.stringify('production')
+    },
+    banner: {
+      js: `// Asana MCP HTTP Server v${pkg.version}\n`
+    },
+    external: [
+      // Node.js built-in modules that should not be bundled
+      'url',
+      'http',
+      'https',
+      'stream',
+      'zlib',
+      'util',
+      'events',
+      'buffer',
+      'querystring',
+      'asana',
+      'jsdom',
+      'express',
+      'cors',
+      'helmet'
     ]
   });
 }
