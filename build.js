@@ -62,7 +62,6 @@ async function main() {
       'buffer',
       'querystring',
       'asana',
-      'jsdom',
       'express',
       'cors',
       'helmet'
