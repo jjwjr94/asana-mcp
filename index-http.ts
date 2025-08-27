@@ -27,8 +27,8 @@ interface StreamResponse {
 
 class AsanaHttpServer {
   private app: express.Application;
-  private server: Server;
-  private asanaClient: AsanaClientWrapper;
+  private server!: Server;
+  private asanaClient!: AsanaClientWrapper;
   private port: number;
 
   constructor(port: number = 3000) {
@@ -185,12 +185,13 @@ class AsanaHttpServer {
         // Handle different MCP methods
         switch (method) {
           case 'tools/list':
-            result = await this.server.handleRequest({
+            result = {
               jsonrpc: "2.0",
               id: requestId,
-              method: "tools/list",
-              params: {}
-            });
+              result: {
+                tools: list_of_tools
+              }
+            };
             break;
             
           case 'tools/call':
@@ -216,7 +217,7 @@ class AsanaHttpServer {
                 name: params.name,
                 arguments: params.arguments || {}
               }
-            });
+            } as any);
             break;
             
           case 'prompts/list':
@@ -226,7 +227,7 @@ class AsanaHttpServer {
               id: requestId,
               method: "prompts/list",
               params: {}
-            });
+            } as any);
             break;
             
           case 'prompts/get':
@@ -242,17 +243,12 @@ class AsanaHttpServer {
               id: requestId,
               method: "prompts/get",
               params: { name: params.name }
-            });
+            } as any);
             break;
             
           case 'resources/list':
             const resourceHandlers = createResourceHandlers(asanaClient);
-            result = await resourceHandlers.listResources({
-              jsonrpc: "2.0",
-              id: requestId,
-              method: "resources/list",
-              params: {}
-            });
+            result = await resourceHandlers.listResources();
             break;
             
           case 'resources/read':
@@ -268,7 +264,7 @@ class AsanaHttpServer {
               id: requestId,
               method: "resources/read",
               params: { uri: params.uri }
-            });
+            } as any);
             break;
             
           default:
@@ -353,7 +349,7 @@ class AsanaHttpServer {
             name: toolName,
             arguments: toolArgs || {}
           }
-        });
+        } as any);
 
         // Send the result
         this.sendStreamResponse(res, requestId, 'data', result);
@@ -396,7 +392,7 @@ class AsanaHttpServer {
             name: toolName,
             arguments: toolArgs || {}
           }
-        });
+        } as any);
 
         res.json(result);
       } catch (error) {
