@@ -13,8 +13,6 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: ASANA_ACCESS_TOKEN
-        sync: false
     secrets:
       - key: ASANA_ACCESS_TOKEN
         name: asana-access-token
