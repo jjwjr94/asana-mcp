@@ -37,12 +37,12 @@ async function main() {
 
   // Build the HTTP server
   await build({
-    entryPoints: ['src/http-server.ts'],
+    entryPoints: ['index-http.ts'],
     bundle: true,
     platform: 'node',
     target: 'node18',
     format: 'esm',
-    outfile: 'dist/http-server.js',
+    outfile: 'dist/index-http.js',
     define: {
       __VERSION__: JSON.stringify(pkg.version),
       'process.env.NODE_ENV': JSON.stringify('production')

@@ -23,9 +23,10 @@
     "build": "node build.js",
     "prepare": "npm run build",
     "start": "node dist/index.js",
-    "start:http": "node dist/http-server.js",
+    "start:http": "node dist/index-http.js",
     "dev": "NODE_ENV=development NODE_OPTIONS='--loader ts-node/esm' node --experimental-specifier-resolution=node src/index.ts",
-    "dev:http": "NODE_ENV=development NODE_OPTIONS='--loader ts-node/esm' node --experimental-specifier-resolution=node src/http-server.ts",
+    "dev:http": "NODE_ENV=development NODE_OPTIONS='--loader ts-node/esm' node --experimental-specifier-resolution=node index-http.ts",
+    "test": "node test-http-server.js",
     "watch": "tsc -w",
     "prepublishOnly": "npm run build",
     "inspector": "npx @modelcontextprotocol/inspector dist/index.js"
