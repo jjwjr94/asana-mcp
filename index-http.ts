@@ -91,7 +91,8 @@ class AsanaHttpServer {
       return token;
     };
 
-    this.asanaClient = new AsanaClientWrapper(getAsanaToken());
+    // Don't create client immediately - will be created per request
+    // this.asanaClient = new AsanaClientWrapper(getAsanaToken());
     
     this.server = new Server(
       {
@@ -107,11 +108,11 @@ class AsanaHttpServer {
       }
     );
 
-    // Set up MCP handlers
-    this.server.setRequestHandler(
-      CallToolRequestSchema,
-      tool_handler(this.asanaClient)
-    );
+    // Set up MCP handlers - will be created per request
+    // this.server.setRequestHandler(
+    //   CallToolRequestSchema,
+    //   tool_handler(this.asanaClient)
+    // );
 
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       console.log("Received ListToolsRequest");
@@ -120,14 +121,15 @@ class AsanaHttpServer {
       };
     });
 
-    const promptHandlers = createPromptHandlers(this.asanaClient);
-    this.server.setRequestHandler(ListPromptsRequestSchema, promptHandlers.listPrompts);
-    this.server.setRequestHandler(GetPromptRequestSchema, promptHandlers.getPrompt);
+    // Handlers will be created per request with fresh clients
+    // const promptHandlers = createPromptHandlers(this.asanaClient);
+    // this.server.setRequestHandler(ListPromptsRequestSchema, promptHandlers.listPrompts);
+    // this.server.setRequestHandler(GetPromptRequestSchema, promptHandlers.getPrompt);
 
-    const resourceHandlers = createResourceHandlers(this.asanaClient);
-    this.server.setRequestHandler(ListResourcesRequestSchema, resourceHandlers.listResources);
-    this.server.setRequestHandler(ListResourceTemplatesRequestSchema, resourceHandlers.listResourceTemplates);
-    this.server.setRequestHandler(ReadResourceRequestSchema, resourceHandlers.readResource);
+    // const resourceHandlers = createResourceHandlers(this.asanaClient);
+    // this.server.setRequestHandler(ListResourcesRequestSchema, resourceHandlers.listResources);
+    // this.server.setRequestHandler(ListResourceTemplatesRequestSchema, resourceHandlers.listResourceTemplates);
+    // this.server.setRequestHandler(ReadResourceRequestSchema, resourceHandlers.readResource);
   }
 
   private setupRoutes() {
@@ -464,6 +466,22 @@ class AsanaHttpServer {
       console.error('Unhandled error:', err);
       res.status(500).json({ error: 'Internal server error' });
     });
+  }
+
+  private getAsanaToken(req?: express.Request): string {
+    // Priority: 1. Request header, 2. Environment variable
+    const token = req?.headers['x-asana-token'] as string || process.env.ASANA_ACCESS_TOKEN;
+    
+    if (!token) {
+      throw new Error("Asana access token required. Set ASANA_ACCESS_TOKEN environment variable or pass x-asana-token header.");
+    }
+    
+    return token;
+  }
+
+  private getAsanaClient(req?: express.Request): AsanaClientWrapper {
+    const token = this.getAsanaToken(req);
+    return new AsanaClientWrapper(token);
   }
 
   private sendStreamResponse(res: express.Response, id: string, type: 'data' | 'error' | 'complete', data?: any, error?: string) {
